@@ -1,0 +1,174 @@
+{% extends 'referal_system/partner_base.html' %}
+
+{% block title %}Add New Lead{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 35px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    .lead-type-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .lead-type-card:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+    .lead-type-card input[type="radio"]:checked + label {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="form-card">
+                <div class="text-center mb-4">
+                    <h2><i class="fas fa-user-plus text-primary"></i> Add New Lead</h2>
+                    <p class="text-muted">Choose lead type and fill in the details</p>
+                </div>
+
+                <form method="POST" action="{% url 'partner_add_lead' %}">
+                    {% csrf_token %}
+                    
+                    <!-- Lead Ownership Type -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-briefcase"></i> Lead Type *
+                        </label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="radio" name="lead_ownership" value="own" 
+                                       id="ownLead" class="d-none" required>
+                                <label for="ownLead" class="lead-type-card w-100">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-user-tie fa-2x text-primary me-3"></i>
+                                        <div>
+                                            <h5 class="mb-2">Own Lead</h5>
+                                            <p class="text-muted small mb-0">
+                                                Lead for yourself. You will manage this lead completely 
+                                                (stage, amount, etc.)
+                                            </p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="radio" name="lead_ownership" value="referral" 
+                                       id="referralLead" class="d-none" required>
+                                <label for="referralLead" class="lead-type-card w-100">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-handshake fa-2x text-success me-3"></i>
+                                        <div>
+                                            <h5 class="mb-2">Referral Lead</h5>
+                                            <p class="text-muted small mb-0">
+                                                Assign to admin. Admin will manage and you will get 
+                                                commission when closed.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <!-- Customer Details -->
+                    <h5 class="mb-3"><i class="fas fa-address-card"></i> Customer Details</h5>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Customer Name *</label>
+                            <input type="text" class="form-control" name="customer_name" 
+                                   placeholder="Enter customer name" required>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Customer Phone *</label>
+                            <input type="text" class="form-control" name="customer_phone" 
+                                   placeholder="Enter customer phone" required>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Customer Email *</label>
+                        <input type="email" class="form-control" name="customer_email" 
+                               placeholder="Enter customer email" required>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Lead Stage</label>
+                            <select class="form-select" name="stage">
+                                <option value="">Select Stage</option>
+                                {% for stage in stages %}
+                                    <option value="{{ stage.id }}">{{ stage.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-semibold">Deal Amount (₹)</label>
+                            <input type="number" class="form-control" name="deal_amount" 
+                                   step="0.01" min="0" placeholder="Enter deal amount">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Notes (Optional)</label>
+                        <textarea class="form-control" name="notes" rows="3" 
+                                  placeholder="Add any additional notes about the lead..."></textarea>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Note:</strong> 
+                        <ul class="mb-0 mt-2">
+                            <li><strong>Own Lead:</strong> You can update stage, deal amount anytime.</li>
+                            <li><strong>Referral Lead:</strong> Admin will manage it and set commission %.</li>
+                        </ul>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg btn-submit">
+                            <i class="fas fa-paper-plane"></i> Submit Lead
+                        </button>
+                        <a href="{% url 'partner_dashboard' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Radio button styling
+document.querySelectorAll('.lead-type-card').forEach(card => {
+    card.addEventListener('click', function() {
+        document.querySelectorAll('.lead-type-card').forEach(c => {
+            c.style.borderColor = '#e0e0e0';
+            c.style.background = 'white';
+        });
+        this.style.borderColor = '#667eea';
+        this.style.background = '#f8f9ff';
+    });
+});
+</script>
+{% endblock %}

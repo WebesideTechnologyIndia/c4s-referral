@@ -1,0 +1,192 @@
+{% extends 'referal_system/admin_base.html' %}
+
+{% block title %}Manage Payouts{% endblock %}
+{% block page_title %}Payout Requests{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-custom">
+            <h4 class="mb-4"><i class="fas fa-money-check-alt"></i> All Payout Requests</h4>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Partner</th>
+                            <th>Amount</th>
+                            <th>Status</th>
+                            <th>Requested At</th>
+                            <th>Processed At</th>
+                            <th>Processed By</th>
+                            <th>Bank Details</th>
+                            <th>Remarks</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payout in payouts %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <strong>{{ payout.partner.name }}</strong><br>
+                                <small class="text-muted">{{ payout.partner.email }}</small>
+                            </td>
+                            <td class="fw-bold text-success">₹{{ payout.amount|floatformat:2 }}</td>
+                            <td>
+                                {% if payout.status == 'pending' %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% elif payout.status == 'approved' %}
+                                    <span class="badge bg-info">Approved</span>
+                                {% elif payout.status == 'completed' %}
+                                    <span class="badge bg-success">Completed</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ payout.requested_at|date:"d M, Y H:i" }}</td>
+                            <td>
+                                {% if payout.processed_at %}
+                                    {{ payout.processed_at|date:"d M, Y H:i" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if payout.processed_by %}
+                                    {{ payout.processed_by.username }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td><small>{{ payout.bank_details|truncatewords:10 }}</small></td>
+                            <td><small>{{ payout.remarks|default:"-" }}</small></td>
+                            <td>
+                                {% if payout.status == 'pending' %}
+                                    <button class="btn btn-sm btn-success" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#approveModal{{ payout.id }}">
+                                        <i class="fas fa-check"></i> Approve
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#rejectModal{{ payout.id }}">
+                                        <i class="fas fa-times"></i> Reject
+                                    </button>
+                                {% elif payout.status == 'approved' %}
+                                    <button class="btn btn-sm btn-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#completeModal{{ payout.id }}">
+                                        <i class="fas fa-check-circle"></i> Complete
+                                    </button>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Approve Modal -->
+                        <div class="modal fade" id="approveModal{{ payout.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-success text-white">
+                                        <h5 class="modal-title">Approve Payout</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{% url 'admin_process_payout' payout.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="approve">
+                                        <div class="modal-body">
+                                            <p><strong>Partner:</strong> {{ payout.partner.name }}</p>
+                                            <p><strong>Amount:</strong> ₹{{ payout.amount|floatformat:2 }}</p>
+                                            <p><strong>Bank Details:</strong> {{ payout.bank_details }}</p>
+                                            <div class="mb-3">
+                                                <label class="form-label">Remarks (Optional)</label>
+                                                <textarea class="form-control" name="remarks" rows="2"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-success">Approve Payout</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Complete Modal -->
+                        <div class="modal fade" id="completeModal{{ payout.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-primary text-white">
+                                        <h5 class="modal-title">Complete Payout</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{% url 'admin_process_payout' payout.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="complete">
+                                        <div class="modal-body">
+                                            <div class="alert alert-warning">
+                                                <i class="fas fa-exclamation-triangle"></i> 
+                                                This will deduct ₹{{ payout.amount|floatformat:2 }} from partner's wallet
+                                            </div>
+                                            <p><strong>Partner:</strong> {{ payout.partner.name }}</p>
+                                            <p><strong>Current Wallet Balance:</strong> ₹{{ payout.partner.wallet_balance|floatformat:2 }}</p>
+                                            <p><strong>Amount to Deduct:</strong> ₹{{ payout.amount|floatformat:2 }}</p>
+                                            <div class="mb-3">
+                                                <label class="form-label">Transaction Remarks *</label>
+                                                <textarea class="form-control" name="remarks" rows="2" required 
+                                                          placeholder="e.g., Transferred to bank account"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Complete Payout</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Reject Modal -->
+                        <div class="modal fade" id="rejectModal{{ payout.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title">Reject Payout</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{% url 'admin_process_payout' payout.id %}">
+                                        {% csrf_token %}
+                                        <input type="hidden" name="action" value="reject">
+                                        <div class="modal-body">
+                                            <p><strong>Partner:</strong> {{ payout.partner.name }}</p>
+                                            <p><strong>Amount:</strong> ₹{{ payout.amount|floatformat:2 }}</p>
+                                            <div class="mb-3">
+                                                <label class="form-label">Rejection Reason *</label>
+                                                <textarea class="form-control" name="remarks" rows="3" required
+                                                          placeholder="Please provide reason for rejection"></textarea>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-danger">Reject Payout</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% empty %}
+                        <tr>
+                            <td colspan="10" class="text-center text-muted">No payout requests found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

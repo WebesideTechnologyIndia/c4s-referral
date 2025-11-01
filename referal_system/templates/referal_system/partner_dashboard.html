@@ -1,0 +1,202 @@
+{% extends 'referal_system/partner_base.html' %}
+
+{% block title %}Partner Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+    .stats-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s;
+    }
+    .stats-card:hover {
+        transform: translateY(-5px);
+    }
+    .stats-icon {
+        font-size: 2.5rem;
+        margin-bottom: 10px;
+    }
+    .table-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 20px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row mb-4">
+        <div class="col">
+            <h2 class="text-white">Welcome, {{ partner.name }}!</h2>
+            <p class="text-white-50">Here's your referral performance overview</p>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row">
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="stats-icon text-primary">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h3 class="fw-bold">{{ total_leads }}</h3>
+                <p class="text-muted mb-0">Total Leads</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="stats-icon text-success">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <h3 class="fw-bold">₹{{ total_commission|floatformat:2 }}</h3>
+                <p class="text-muted mb-0">Total Earned</p>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stats-card text-center">
+                <div class="stats-icon text-warning">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <h3 class="fw-bold">₹{{ pending_commission|floatformat:2 }}</h3>
+                <p class="text-muted mb-0">Pending Commission</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wallet Balance -->
+    <div class="row">
+        <div class="col-12">
+            <div class="stats-card">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="text-muted mb-2">Wallet Balance</h5>
+                        <h2 class="fw-bold text-success">₹{{ partner.wallet_balance|floatformat:2 }}</h2>
+                    </div>
+                    <a href="{% url 'partner_request_payout' %}" class="btn btn-success btn-lg">
+                        <i class="fas fa-hand-holding-usd"></i> Request Payout
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Leads -->
+    <div class="row">
+        <div class="col-12">
+            <div class="table-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="fas fa-list"></i> Recent Leads</h4>
+                    <a href="{% url 'partner_add_lead' %}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Add New Lead
+                    </a>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Customer Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Stage</th>
+                                <th>Deal Amount</th>
+                                <th>Commission</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lead in recent_leads %}
+                            <tr>
+                                <td>{{ lead.customer_name }}</td>
+                                <td>{{ lead.customer_email }}</td>
+                                <td>{{ lead.customer_phone }}</td>
+                                <td>
+                                    {% if lead.stage %}
+                                        <span class="badge bg-secondary">{{ lead.stage.name }}</span>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>₹{{ lead.deal_amount|floatformat:2 }}</td>
+                                <td>₹{{ lead.commission_amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if lead.commission_paid %}
+                                        <span class="badge bg-success">Paid</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ lead.created_at|date:"d M, Y" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" class="text-center text-muted">
+                                    No leads yet. <a href="{% url 'partner_add_lead' %}">Add your first lead!</a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="row">
+        <div class="col-12">
+            <div class="table-card">
+                <h4 class="mb-4"><i class="fas fa-exchange-alt"></i> Recent Transactions</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in recent_transactions %}
+                            <tr>
+                                <td>
+                                    {% if transaction.transaction_type == 'credit' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-arrow-down"></i> Credit
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-arrow-up"></i> Debit
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold">
+                                    {% if transaction.transaction_type == 'credit' %}
+                                        <span class="text-success">+₹{{ transaction.amount|floatformat:2 }}</span>
+                                    {% else %}
+                                        <span class="text-danger">-₹{{ transaction.amount|floatformat:2 }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ transaction.description }}</td>
+                                <td>{{ transaction.created_at|date:"d M, Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center text-muted">No transactions yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

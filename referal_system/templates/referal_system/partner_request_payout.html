@@ -1,0 +1,93 @@
+{% extends 'referal_system/partner_base.html' %}
+
+{% block title %}Request Payout{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 35px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .wallet-info {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 25px;
+        color: white;
+        margin-bottom: 30px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <!-- Wallet Info -->
+            <div class="wallet-info">
+                <h5 class="mb-2 text-white-50">Available Balance</h5>
+                <h2 class="display-4 fw-bold mb-0">₹{{ partner.wallet_balance|floatformat:2 }}</h2>
+            </div>
+
+            <!-- Payout Form -->
+            <div class="form-card">
+                <div class="text-center mb-4">
+                    <h2><i class="fas fa-hand-holding-usd text-primary"></i> Request Payout</h2>
+                    <p class="text-muted">Minimum payout amount is ₹100</p>
+                </div>
+
+                <form method="POST" action="{% url 'partner_request_payout' %}">
+                    {% csrf_token %}
+                    
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-rupee-sign"></i> Payout Amount *
+                        </label>
+                        <input type="number" 
+                               class="form-control form-control-lg" 
+                               name="amount" 
+                               step="0.01" 
+                               min="100" 
+                               max="{{ partner.wallet_balance }}"
+                               placeholder="Enter amount" 
+                               required>
+                        <small class="text-muted">
+                            Maximum: ₹{{ partner.wallet_balance|floatformat:2 }}
+                        </small>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">
+                            <i class="fas fa-university"></i> Bank Account Details *
+                        </label>
+                        <textarea class="form-control" 
+                                  name="bank_details" 
+                                  rows="5" 
+                                  placeholder="Enter your bank details:&#10;Bank Name:&#10;Account Number:&#10;IFSC Code:&#10;Account Holder Name:" 
+                                  required></textarea>
+                        <small class="text-muted">
+                            Please provide complete bank details for processing
+                        </small>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> 
+                        <strong>Note:</strong> Payout requests are processed within 3-5 business days. 
+                        You will receive a confirmation once your request is approved.
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-paper-plane"></i> Submit Payout Request
+                        </button>
+                        <a href="{% url 'partner_wallet' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Wallet
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

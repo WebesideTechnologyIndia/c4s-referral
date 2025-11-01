@@ -1,0 +1,173 @@
+{% extends 'referal_system/admin_base.html' %}
+
+{% block title %}All Leads{% endblock %}
+{% block page_title %}All Leads{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-custom">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-user-tie"></i> All Leads</h4>
+                <a href="{% url 'admin_add_lead' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add New Lead
+                </a>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>#</th>
+                            <th>Customer Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Type</th>
+                            <th>Partner</th>
+                            <th>Stage</th>
+                            <th>Deal Amount</th>
+                            <th>Commission %</th>
+                            <th>Commission Amount</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for lead in leads %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ lead.customer_name }}</td>
+                            <td>{{ lead.customer_email }}</td>
+                            <td>{{ lead.customer_phone }}</td>
+                            <td>
+                                {% if lead.lead_type == 'admin' %}
+                                    <span class="badge bg-info">Admin</span>
+                                {% elif lead.lead_type == 'partner_own' %}
+                                    <span class="badge bg-primary">Partner Own</span>
+                                {% elif lead.lead_type == 'partner_referral' %}
+                                    <span class="badge bg-success">Partner Referral</span>
+                                {% else %}
+                                    <span class="badge bg-secondary">Partner</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if lead.partner %}
+                                    {{ lead.partner.name }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if lead.stage %}
+                                    <span class="badge bg-secondary">{{ lead.stage.name }}</span>
+                                {% else %}
+                                    <span class="badge bg-light text-dark">Not Set</span>
+                                {% endif %}
+                            </td>
+                            <td>₹{{ lead.deal_amount|floatformat:2 }}</td>
+                            <td>{{ lead.commission_percent }}%</td>
+                            <td class="fw-bold">₹{{ lead.commission_amount|floatformat:2 }}</td>
+                            <td>
+                                {% if lead.commission_paid %}
+                                    <span class="badge bg-success">Paid</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ lead.created_at|date:"d M, Y" }}</td>
+                            <td>
+                                {% if lead.lead_type == 'partner_own' %}
+                                    <!-- Partner Own Leads - Admin cannot edit -->
+                                    <span class="badge bg-warning text-dark">
+                                        <i class="fas fa-lock"></i> Partner Managed
+                                    </span>
+                                {% else %}
+                                    <!-- Admin can edit Admin and Referral leads -->
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#updateLeadModal{{ lead.id }}">
+                                        <i class="fas fa-edit"></i>
+                                    </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+
+                        <!-- Update Lead Modal (Only for Admin & Referral Leads) -->
+                        {% if lead.lead_type != 'partner_own' %}
+                        <div class="modal fade" id="updateLeadModal{{ lead.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Update Lead: {{ lead.customer_name }}</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <form method="POST" action="{% url 'admin_update_lead' lead.id %}">
+                                        {% csrf_token %}
+                                        <div class="modal-body">
+                                            <div class="mb-3">
+                                                <label class="form-label">Stage</label>
+                                                <select class="form-select" name="stage">
+                                                    <option value="">Select Stage</option>
+                                                    {% for stage in stages %}
+                                                        <option value="{{ stage.id }}" 
+                                                                {% if lead.stage and lead.stage.id == stage.id %}selected{% endif %}>
+                                                            {{ stage.name }}
+                                                        </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label class="form-label">Deal Amount (₹)</label>
+                                                <input type="number" step="0.01" class="form-control" 
+                                                       name="deal_amount" value="{{ lead.deal_amount }}">
+                                            </div>
+                                            
+                                            {% if lead.lead_type == 'partner_referral' %}
+                                            <!-- Commission fields only for referral leads -->
+                                            <div class="mb-3">
+                                                <label class="form-label">Commission Percent (%)</label>
+                                                <input type="number" step="0.01" class="form-control" 
+                                                       name="commission_percent" value="{{ lead.commission_percent }}">
+                                            </div>
+                                            <div class="mb-3 form-check">
+                                                <input type="checkbox" class="form-check-input" 
+                                                       name="commission_paid" id="paid{{ lead.id }}"
+                                                       {% if lead.commission_paid %}checked{% endif %}>
+                                                <label class="form-check-label" for="paid{{ lead.id }}">
+                                                    Mark as Paid (Will credit ₹{{ lead.commission_amount|floatformat:2 }} to wallet)
+                                                </label>
+                                            </div>
+                                            {% endif %}
+
+                                            <div class="alert alert-info small">
+                                                <i class="fas fa-info-circle"></i>
+                                                {% if lead.lead_type == 'admin' %}
+                                                    This is an admin lead. No commission applicable.
+                                                {% elif lead.lead_type == 'partner_referral' %}
+                                                    This is a referral lead from {{ lead.partner.name }}. Set commission % to pay partner.
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <button type="submit" class="btn btn-primary">Update Lead</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% empty %}
+                        <tr>
+                            <td colspan="13" class="text-center text-muted">No leads found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

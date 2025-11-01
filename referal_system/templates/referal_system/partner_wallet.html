@@ -1,0 +1,167 @@
+{% extends 'referal_system/partner_base.html' %}
+
+{% block title %}My Wallet{% endblock %}
+
+{% block extra_css %}
+<style>
+    .wallet-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 20px;
+        padding: 40px;
+        color: white;
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    }
+    .table-card {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Wallet Balance Card -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="wallet-card">
+                <div class="row align-items-center">
+                    <div class="col-md-8">
+                        <h5 class="mb-2 text-white-50">Total Wallet Balance</h5>
+                        <h1 class="display-3 fw-bold mb-0">₹{{ partner.wallet_balance|floatformat:2 }}</h1>
+                    </div>
+                    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                        <a href="{% url 'partner_request_payout' %}" class="btn btn-light btn-lg">
+                            <i class="fas fa-hand-holding-usd"></i> Request Payout
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transactions Table -->
+    <div class="row">
+        <div class="col-12">
+            <div class="table-card">
+                <h4 class="mb-4"><i class="fas fa-exchange-alt"></i> Transaction History</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                                <th>Description</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in transactions %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    {% if transaction.transaction_type == 'credit' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-arrow-down"></i> Credit
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-arrow-up"></i> Debit
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold">
+                                    {% if transaction.transaction_type == 'credit' %}
+                                        <span class="text-success">+₹{{ transaction.amount|floatformat:2 }}</span>
+                                    {% else %}
+                                        <span class="text-danger">-₹{{ transaction.amount|floatformat:2 }}</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ transaction.description }}</td>
+                                <td>{{ transaction.created_at|date:"d M, Y H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">No transactions yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payout Requests Table -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="table-card">
+                <h4 class="mb-4"><i class="fas fa-money-check-alt"></i> Payout Requests</h4>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Requested At</th>
+                                <th>Processed At</th>
+                                <th>Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for payout in payouts %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td class="fw-bold">₹{{ payout.amount|floatformat:2 }}</td>
+                                <td>
+                                    {% if payout.status == 'pending' %}
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-clock"></i> Pending
+                                        </span>
+                                    {% elif payout.status == 'approved' %}
+                                        <span class="badge bg-info">
+                                            <i class="fas fa-check"></i> Approved
+                                        </span>
+                                    {% elif payout.status == 'completed' %}
+                                        <span class="badge bg-success">
+                                            <i class="fas fa-check-circle"></i> Completed
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            <i class="fas fa-times"></i> Rejected
+                                        </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ payout.requested_at|date:"d M, Y H:i" }}</td>
+                                <td>
+                                    {% if payout.processed_at %}
+                                        {{ payout.processed_at|date:"d M, Y H:i" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if payout.remarks %}
+                                        <small>{{ payout.remarks }}</small>
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No payout requests yet</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
