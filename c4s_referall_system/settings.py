@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-=uv#qj0*o@62%c@6qk5gt6qo0sqt)eocfqwiwo3_vhjmze1znj
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['c4sreferral.webesidetechnology.com', 'www.c4sreferral.webesidetechnology.com','127.0.0.1:8006','127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ['https://c4sreferral.webesidetechnology.com']
 
 
 # Application definition
