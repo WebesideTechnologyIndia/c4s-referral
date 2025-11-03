@@ -1,0 +1,119 @@
+{% extends 'referal_system/team_base.html' %}
+
+{% block title %}Follow-up Calendar{% endblock %}
+
+{% block extra_css %}
+<style>
+    .calendar-card {
+        background: white;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .calendar-date {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 10px;
+        border-radius: 8px;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    .followup-item {
+        background: #f8f9fa;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 4px solid #667eea;
+    }
+    .followup-item.completed {
+        opacity: 0.6;
+        border-left-color: #28a745;
+    }
+    .followup-item.overdue {
+        border-left-color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-calendar-alt"></i> Follow-up Calendar</h2>
+        <p class="text-muted">All your scheduled follow-ups</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        {% if calendar_data %}
+            {% for date, followups in calendar_data.items %}
+            <div class="calendar-card">
+                <div class="calendar-date">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar-day"></i> 
+                        {{ date|date:"l, d F Y" }}
+                    </h5>
+                    {% if date == today %}
+                        <span class="badge bg-danger">TODAY</span>
+                    {% elif date < today %}
+                        <span class="badge bg-warning">OVERDUE</span>
+                    {% endif %}
+                </div>
+
+                {% for followup in followups %}
+                <div class="followup-item {% if followup.follow_up_completed %}completed{% elif date < today %}overdue{% endif %}">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">
+                                <i class="fas fa-user"></i> {{ followup.lead.customer_name }}
+                            </h6>
+                            <p class="mb-2 text-muted small">
+                                <i class="fas fa-envelope"></i> {{ followup.lead.customer_email }} | 
+                                <i class="fas fa-phone"></i> {{ followup.lead.customer_phone }}
+                            </p>
+                            <p class="mb-0">{{ followup.note|truncatewords:20 }}</p>
+                            
+                            {% if followup.follow_up_completed %}
+                                <span class="badge bg-success mt-2">
+                                    <i class="fas fa-check"></i> Completed
+                                </span>
+                            {% else %}
+                                <span class="badge bg-warning mt-2">
+                                    <i class="fas fa-clock"></i> Pending
+                                </span>
+                            {% endif %}
+                        </div>
+                        <div class="ms-3">
+                            <a href="{% url 'team_lead_detail' followup.lead.id %}" 
+                               class="btn btn-sm btn-primary mb-2">
+                                <i class="fas fa-eye"></i> View Lead
+                            </a>
+                            {% if not followup.follow_up_completed %}
+                            <a href="{% url 'team_mark_followup_complete' followup.id %}" 
+                               class="btn btn-sm btn-success d-block"
+                               onclick="return confirm('Mark as complete?')">
+                                <i class="fas fa-check"></i> Complete
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-calendar-times fa-5x text-muted mb-3"></i>
+                    <h4>No Follow-ups Scheduled</h4>
+                    <p class="text-muted">Start adding follow-up dates to your lead notes!</p>
+                    <a href="{% url 'team_my_leads' %}" class="btn btn-primary">
+                        <i class="fas fa-users"></i> Go to My Leads
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

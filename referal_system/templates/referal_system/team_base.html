@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Team Panel{% endblock %} - C4S Referral System</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --sidebar-bg: #2c3e50;
+            --sidebar-hover: #34495e;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f7fa;
+        }
+        
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            width: 260px;
+            background: var(--sidebar-bg);
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            z-index: 1000;
+        }
+        
+        .sidebar-brand {
+            padding: 0 20px 30px;
+            color: white;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .sidebar-brand h4 {
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+        
+        .nav-item {
+            list-style: none;
+        }
+        
+        .nav-link {
+            display: block;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            background: var(--sidebar-hover);
+            color: white;
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .nav-link i {
+            margin-right: 10px;
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            margin-left: 260px;
+            padding: 30px;
+            min-height: 100vh;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+            padding: 15px 20px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 0;
+                padding: 0;
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+    
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="sidebar-brand">
+            <h4><i class="fas fa-user-tie"></i> Team Panel</h4>
+            <small class="text-muted">{{ team_member.name }}</small>
+        </div>
+        
+        <ul class="sidebar-nav">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'team_dashboard' %}active{% endif %}" 
+                   href="{% url 'team_dashboard' %}">
+                    <i class="fas fa-home"></i> Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'team_my_leads' %}active{% endif %}" 
+                   href="{% url 'team_my_leads' %}">
+                    <i class="fas fa-users"></i> My Leads
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'team_followup_calendar' %}active{% endif %}" 
+                   href="{% url 'team_followup_calendar' %}">
+                    <i class="fas fa-calendar-alt"></i> Follow-up Calendar
+                </a>
+            </li>
+            
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 20px;">
+            
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'team_my_leads' %}?filter=today">
+                    <i class="fas fa-calendar-day"></i> Today's Follow-ups
+                    <span class="badge bg-danger ms-2">{{ today_followups|default:0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'team_my_leads' %}?filter=pending">
+                    <i class="fas fa-exclamation-circle"></i> Pending
+                    <span class="badge bg-warning ms-2">{{ pending_followups|default:0 }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'team_my_leads' %}?filter=upcoming">
+                    <i class="fas fa-clock"></i> Upcoming
+                    <span class="badge bg-info ms-2">{{ upcoming_followups|default:0 }}</span>
+                </a>
+            </li>
+            
+            <hr style="border-color: rgba(255,255,255,0.1); margin: 20px;">
+            
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'partner_logout' %}">
+                    <i class="fas fa-sign-out-alt"></i> Logout
+                </a>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

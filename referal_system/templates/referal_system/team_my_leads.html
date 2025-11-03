@@ -1,0 +1,108 @@
+{% extends 'referal_system/team_base.html' %}
+
+{% block title %}My Leads{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <h2><i class="fas fa-users"></i> My Assigned Leads</h2>
+    </div>
+</div>
+
+<!-- Filter Buttons -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'team_my_leads' %}?filter=all" 
+                       class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">
+                        <i class="fas fa-list"></i> All Leads
+                    </a>
+                    <a href="{% url 'team_my_leads' %}?filter=today" 
+                       class="btn {% if filter_type == 'today' %}btn-danger{% else %}btn-outline-danger{% endif %}">
+                        <i class="fas fa-calendar-day"></i> Today's Follow-ups
+                    </a>
+                    <a href="{% url 'team_my_leads' %}?filter=pending" 
+                       class="btn {% if filter_type == 'pending' %}btn-warning{% else %}btn-outline-warning{% endif %}">
+                        <i class="fas fa-exclamation-triangle"></i> Pending (Overdue)
+                    </a>
+                    <a href="{% url 'team_my_leads' %}?filter=upcoming" 
+                       class="btn {% if filter_type == 'upcoming' %}btn-info{% else %}btn-outline-info{% endif %}">
+                        <i class="fas fa-clock"></i> Upcoming (7 Days)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Leads Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    {% if filter_type == 'today' %}
+                        <i class="fas fa-calendar-day"></i> Today's Follow-ups
+                    {% elif filter_type == 'pending' %}
+                        <i class="fas fa-exclamation-triangle"></i> Pending Follow-ups
+                    {% elif filter_type == 'upcoming' %}
+                        <i class="fas fa-clock"></i> Upcoming Follow-ups
+                    {% else %}
+                        <i class="fas fa-list"></i> All Leads
+                    {% endif %}
+                    ({{ leads.count }})
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Customer Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Stage</th>
+                                <th>Deal Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for lead in leads %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td><strong>{{ lead.customer_name }}</strong></td>
+                                <td>{{ lead.customer_email }}</td>
+                                <td>{{ lead.customer_phone }}</td>
+                                <td>
+                                    {% if lead.stage %}
+                                        <span class="badge bg-secondary">{{ lead.stage.name }}</span>
+                                    {% else %}
+                                        <span class="badge bg-light text-dark">Not Set</span>
+                                    {% endif %}
+                                </td>
+                                <td class="fw-bold text-success">₹{{ lead.deal_amount|floatformat:2 }}</td>
+                                <td>
+                                    <a href="{% url 'team_lead_detail' lead.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye"></i> View Details
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center text-muted py-4">
+                                    <i class="fas fa-inbox fa-3x mb-3 d-block"></i>
+                                    <p>No leads found for this filter</p>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

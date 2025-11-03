@@ -1,0 +1,144 @@
+{% extends 'referal_system/admin_base.html' %}
+
+{% block title %}Edit Partner{% endblock %}
+{% block page_title %}Edit Partner{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-custom">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-edit"></i> Edit Partner: {{ partner.name }}</h4>
+                <a href="{% url 'admin_partners' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Partners
+                </a>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <h6 class="mb-3"><i class="fas fa-user"></i> Personal Information</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" name="name" value="{{ partner.name }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" name="email" value="{{ partner.email }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone *</label>
+                        <input type="text" class="form-control" name="phone" value="{{ partner.phone }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" class="form-control" name="company_name" value="{{ partner.company_name }}">
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="mb-3"><i class="fas fa-map-marker-alt"></i> Address Details</h6>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea class="form-control" name="address" rows="2">{{ partner.address }}</textarea>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">City</label>
+                        <input type="text" class="form-control" name="city" value="{{ partner.city }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">State</label>
+                        <input type="text" class="form-control" name="state" value="{{ partner.state }}">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Pincode</label>
+                        <input type="text" class="form-control" name="pincode" value="{{ partner.pincode }}">
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="mb-3"><i class="fas fa-id-card"></i> KYC Documents</h6>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Aadhaar Number</label>
+                        <input type="text" class="form-control" name="aadhaar_number" value="{{ partner.aadhaar_number }}" maxlength="12">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">PAN Number</label>
+                        <input type="text" class="form-control" name="pan_number" value="{{ partner.pan_number }}" maxlength="10" style="text-transform: uppercase;">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">GST Number</label>
+                        <input type="text" class="form-control" name="gst_number" value="{{ partner.gst_number }}" maxlength="15">
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="mb-3"><i class="fas fa-university"></i> Bank Details</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" class="form-control" name="bank_name" value="{{ partner.bank_name }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Account Holder Name</label>
+                        <input type="text" class="form-control" name="account_holder_name" value="{{ partner.account_holder_name }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Account Number</label>
+                        <input type="text" class="form-control" name="account_number" value="{{ partner.account_number }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">IFSC Code</label>
+                        <input type="text" class="form-control" name="ifsc_code" value="{{ partner.ifsc_code }}" maxlength="11" style="text-transform: uppercase;">
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="mb-3"><i class="fas fa-lock"></i> Login Credentials</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Username *</label>
+                        <input type="text" class="form-control" name="username" value="{{ partner.user.username }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Password (leave blank to keep current)</label>
+                        <input type="password" class="form-control" name="password" placeholder="Enter new password">
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="mb-3"><i class="fas fa-cog"></i> Status Settings</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_active" id="is_active" {% if partner.is_active %}checked{% endif %}>
+                            <label class="form-check-label" for="is_active">
+                                Active Status
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" name="is_verified" id="is_verified" {% if partner.is_verified %}checked{% endif %}>
+                            <label class="form-check-label" for="is_verified">
+                                KYC Verified
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <hr>
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'admin_partners' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update Partner
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -6,9 +6,21 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
+        <!-- Registration Link Card -->
+        <div class="card-custom mb-4 bg-light">
+            <h5><i class="fas fa-link"></i> Partner Registration Link</h5>
+            <div class="input-group mt-3">
+                <input type="text" class="form-control" id="registrationLink" value="{{ registration_url }}" readonly>
+                <button class="btn btn-primary" onclick="copyLink()">
+                    <i class="fas fa-copy"></i> Copy Link
+                </button>
+            </div>
+            <small class="text-muted">Share this link with potential partners to let them register themselves.</small>
+        </div>
+
         <div class="card-custom">
             <div class="d-flex justify-content-between align-items-center mb-4">
-                <h4><i class="fas fa-users"></i> All Partners</h4>
+                <h4><i class="fas fa-users"></i> All Partners ({{ partners.count }})</h4>
                 <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPartnerModal">
                     <i class="fas fa-plus"></i> Add New Partner
                 </button>
@@ -22,21 +34,27 @@
                             <th>Name</th>
                             <th>Email</th>
                             <th>Phone</th>
-                            <th>Username</th>
-                            <th>Wallet Balance</th>
-                            <th>Total Leads</th>
+                            <th>Company</th>
+                            <th>PAN</th>
+                            <th>Wallet</th>
+                            <th>Leads</th>
                             <th>Status</th>
-                            <th>Joined Date</th>
+                            <th>Verified</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for partner in partners %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ partner.name }}</td>
+                            <td>
+                                <strong>{{ partner.name }}</strong><br>
+                                <small class="text-muted">@{{ partner.user.username }}</small>
+                            </td>
                             <td>{{ partner.email }}</td>
                             <td>{{ partner.phone }}</td>
-                            <td>{{ partner.user.username }}</td>
+                            <td>{{ partner.company_name|default:"-" }}</td>
+                            <td>{{ partner.pan_number|default:"-" }}</td>
                             <td class="fw-bold text-success">₹{{ partner.wallet_balance|floatformat:2 }}</td>
                             <td>{{ partner.lead_set.count }}</td>
                             <td>
@@ -46,11 +64,53 @@
                                     <span class="badge bg-danger">Inactive</span>
                                 {% endif %}
                             </td>
-                            <td>{{ partner.created_at|date:"d M, Y" }}</td>
+                            <td>
+                                {% if partner.is_verified %}
+                                    <span class="badge bg-info">✓ Verified</span>
+                                {% else %}
+                                    <span class="badge bg-warning">Pending</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'admin_edit_partner' partner.id %}" class="btn btn-sm btn-info" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="{% url 'admin_toggle_partner_status' partner.id %}" class="btn btn-sm btn-warning" title="Toggle Status" onclick="return confirm('Toggle partner status?')">
+                                        <i class="fas fa-toggle-on"></i>
+                                    </a>
+                                    <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ partner.id }}" title="Delete">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
                         </tr>
+                        
+                        <!-- Delete Confirmation Modal -->
+                        <div class="modal fade" id="deleteModal{{ partner.id }}" tabindex="-1">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header bg-danger text-white">
+                                        <h5 class="modal-title"><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h5>
+                                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to delete partner <strong>{{ partner.name }}</strong>?</p>
+                                        <p class="text-danger"><i class="fas fa-warning"></i> This action cannot be undone!</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <form method="POST" action="{% url 'admin_delete_partner' partner.id %}" style="display: inline;">
+                                            {% csrf_token %}
+                                            <button type="submit" class="btn btn-danger">Delete Partner</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         {% empty %}
                         <tr>
-                            <td colspan="9" class="text-center text-muted">No partners found</td>
+                            <td colspan="11" class="text-center text-muted">No partners found</td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -62,7 +122,7 @@
 
 <!-- Add Partner Modal -->
 <div class="modal fade" id="addPartnerModal" tabindex="-1">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title"><i class="fas fa-user-plus"></i> Register New Partner</h5>
@@ -71,25 +131,96 @@
             <form method="POST" action="{% url 'admin_partners' %}">
                 {% csrf_token %}
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Full Name *</label>
-                        <input type="text" class="form-control" name="name" required>
+                    <h6 class="mb-3"><i class="fas fa-user"></i> Personal Information</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Full Name *</label>
+                            <input type="text" class="form-control" name="name" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Email *</label>
+                            <input type="email" class="form-control" name="email" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Phone *</label>
+                            <input type="text" class="form-control" name="phone" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Company Name</label>
+                            <input type="text" class="form-control" name="company_name">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email *</label>
-                        <input type="email" class="form-control" name="email" required>
+
+                    <hr>
+                    <h6 class="mb-3"><i class="fas fa-map-marker-alt"></i> Address Details</h6>
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <label class="form-label">Address</label>
+                            <textarea class="form-control" name="address" rows="2"></textarea>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" name="city">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-control" name="state">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Pincode</label>
+                            <input type="text" class="form-control" name="pincode">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Phone *</label>
-                        <input type="text" class="form-control" name="phone" required>
+
+                    <hr>
+                    <h6 class="mb-3"><i class="fas fa-id-card"></i> KYC Documents</h6>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">Aadhaar Number</label>
+                            <input type="text" class="form-control" name="aadhaar_number" maxlength="12" placeholder="XXXX XXXX XXXX">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">PAN Number</label>
+                            <input type="text" class="form-control" name="pan_number" maxlength="10" placeholder="ABCDE1234F" style="text-transform: uppercase;">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label class="form-label">GST Number</label>
+                            <input type="text" class="form-control" name="gst_number" maxlength="15" placeholder="22AAAAA0000A1Z5">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Username *</label>
-                        <input type="text" class="form-control" name="username" required>
+
+                    <hr>
+                    <h6 class="mb-3"><i class="fas fa-university"></i> Bank Details</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Bank Name</label>
+                            <input type="text" class="form-control" name="bank_name">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Account Holder Name</label>
+                            <input type="text" class="form-control" name="account_holder_name">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Account Number</label>
+                            <input type="text" class="form-control" name="account_number">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">IFSC Code</label>
+                            <input type="text" class="form-control" name="ifsc_code" maxlength="11" style="text-transform: uppercase;">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Password *</label>
-                        <input type="password" class="form-control" name="password" required>
+
+                    <hr>
+                    <h6 class="mb-3"><i class="fas fa-lock"></i> Login Credentials</h6>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Username *</label>
+                            <input type="text" class="form-control" name="username" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Password *</label>
+                            <input type="password" class="form-control" name="password" required>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -100,4 +231,15 @@
         </div>
     </div>
 </div>
+
+<script>
+function copyLink() {
+    var copyText = document.getElementById("registrationLink");
+    copyText.select();
+    copyText.setSelectionRange(0, 99999);
+    document.execCommand("copy");
+    
+    alert("Registration link copied to clipboard!");
+}
+</script>
 {% endblock %}

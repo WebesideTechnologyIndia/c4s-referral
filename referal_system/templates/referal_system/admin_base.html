@@ -158,7 +158,17 @@
                     <i class="fas fa-flag"></i> Lead Stages
                 </a>
             </li>
+            <li class="nav-item">
+    <a class="nav-link" href="{% url 'admin_team_members' %}">
+        <i class="fas fa-users-cog"></i> Team Members
+    </a>
+</li>
             <li>
+                <li class="nav-item">
+    <a class="nav-link" href="{% url 'admin_blogs' %}">
+        <i class="fas fa-blog"></i> Manage Blogs
+    </a>
+</li>
                 <a href="{% url 'admin_payouts' %}" class="{% if request.resolver_match.url_name == 'admin_payouts' %}active{% endif %}">
                     <i class="fas fa-money-check-alt"></i> Payouts
                 </a>

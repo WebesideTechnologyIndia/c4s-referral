@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Partner Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 20px 0;
+        }
+        .register-container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            padding: 30px;
+            max-width: 800px;
+            margin: auto;
+        }
+        .section-divider {
+            margin: 25px 0;
+            border-top: 2px solid #f0f0f0;
+        }
+        .section-title {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="register-container">
+            <div class="text-center mb-4">
+                <i class="fas fa-handshake fa-3x text-primary mb-3"></i>
+                <h2>Partner Registration</h2>
+                <p class="text-muted">Join our partner network and grow your business</p>
+            </div>
+
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <h6 class="section-title"><i class="fas fa-user"></i> Personal Information</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" name="name" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone *</label>
+                        <input type="text" class="form-control" name="phone" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Company Name</label>
+                        <input type="text" class="form-control" name="company_name">
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+                <h6 class="section-title"><i class="fas fa-map-marker-alt"></i> Address Details</h6>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label class="form-label">Address</label>
+                        <textarea class="form-control" name="address" rows="2"></textarea>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">City</label>
+                        <input type="text" class="form-control" name="city">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">State</label>
+                        <input type="text" class="form-control" name="state">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Pincode</label>
+                        <input type="text" class="form-control" name="pincode">
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+                <h6 class="section-title"><i class="fas fa-id-card"></i> KYC Documents</h6>
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">Aadhaar Number</label>
+                        <input type="text" class="form-control" name="aadhaar_number" maxlength="12" placeholder="XXXX XXXX XXXX">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">PAN Number</label>
+                        <input type="text" class="form-control" name="pan_number" maxlength="10" placeholder="ABCDE1234F" style="text-transform: uppercase;">
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label">GST Number</label>
+                        <input type="text" class="form-control" name="gst_number" maxlength="15" placeholder="22AAAAA0000A1Z5">
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+                <h6 class="section-title"><i class="fas fa-university"></i> Bank Details</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Bank Name</label>
+                        <input type="text" class="form-control" name="bank_name">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Account Holder Name</label>
+                        <input type="text" class="form-control" name="account_holder_name">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Account Number</label>
+                        <input type="text" class="form-control" name="account_number">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">IFSC Code</label>
+                        <input type="text" class="form-control" name="ifsc_code" maxlength="11" style="text-transform: uppercase;">
+                    </div>
+                </div>
+
+                <div class="section-divider"></div>
+                <h6 class="section-title"><i class="fas fa-lock"></i> Login Credentials</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Username *</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Password *</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2 mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus"></i> Register as Partner
+                    </button>
+                    <a href="{% url 'partner_login' %}" class="btn btn-outline-secondary">
+                        Already have an account? Login
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

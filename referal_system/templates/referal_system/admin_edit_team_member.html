@@ -1,0 +1,95 @@
+{% extends 'referal_system/admin_base.html' %}
+
+{% block title %}Edit Team Member{% endblock %}
+{% block page_title %}Edit Team Member{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="card-custom">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-edit"></i> Edit Team Member: {{ member.name }}</h4>
+                <a href="{% url 'admin_team_members' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <h6 class="mb-3"><i class="fas fa-user"></i> Personal Information</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Full Name *</label>
+                        <input type="text" class="form-control" name="name" value="{{ member.name }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" name="email" value="{{ member.email }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Phone *</label>
+                        <input type="text" class="form-control" name="phone" value="{{ member.phone }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Employee ID</label>
+                        <input type="text" class="form-control" name="employee_id" value="{{ member.employee_id }}">
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="mb-3"><i class="fas fa-briefcase"></i> Job Details</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Role *</label>
+                        <select class="form-select" name="role" required>
+                            <option value="sales" {% if member.role == 'sales' %}selected{% endif %}>Sales Executive</option>
+                            <option value="support" {% if member.role == 'support' %}selected{% endif %}>Support Executive</option>
+                            <option value="manager" {% if member.role == 'manager' %}selected{% endif %}>Manager</option>
+                            <option value="coordinator" {% if member.role == 'coordinator' %}selected{% endif %}>Coordinator</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Department</label>
+                        <input type="text" class="form-control" name="department" value="{{ member.department }}">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Status *</label>
+                        <select class="form-select" name="status" required>
+                            <option value="active" {% if member.status == 'active' %}selected{% endif %}>Active</option>
+                            <option value="inactive" {% if member.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <hr>
+                <h6 class="mb-3"><i class="fas fa-lock"></i> Login Credentials</h6>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Username *</label>
+                        <input type="text" class="form-control" name="username" value="{{ member.user.username }}" required>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="form-label">Password (leave blank to keep current)</label>
+                        <input type="password" class="form-control" name="password">
+                    </div>
+                </div>
+
+                <hr>
+                <div class="alert alert-info">
+                    <strong>Statistics:</strong><br>
+                    Assigned Leads: {{ member.assigned_leads.count }}<br>
+                    Member Since: {{ member.created_at|date:"d M, Y" }}
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a href="{% url 'admin_team_members' %}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update Team Member
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

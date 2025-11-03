@@ -1,0 +1,273 @@
+{% extends 'referal_system/admin_base.html' %}
+
+{% block title %}Lead Details{% endblock %}
+{% block page_title %}Lead Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-3">
+        <a href="{% url 'admin_leads' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Leads
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Lead Information Card -->
+    <div class="col-md-8">
+        <div class="card-custom mb-4">
+            <h4 class="mb-4"><i class="fas fa-user"></i> Customer Information</h4>
+            
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <strong>Customer Name:</strong>
+                    <p>{{ lead.customer_name }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <strong>Email:</strong>
+                    <p>{{ lead.customer_email }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <strong>Phone:</strong>
+                    <p>{{ lead.customer_phone }}</p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <strong>Lead Type:</strong>
+                    <p>
+                        {% if lead.lead_type == 'admin' %}
+                            <span class="badge bg-info">Admin Lead</span>
+                        {% elif lead.lead_type == 'partner_own' %}
+                            <span class="badge bg-primary">Partner Own</span>
+                        {% elif lead.lead_type == 'partner_referral' %}
+                            <span class="badge bg-success">Partner Referral</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <strong>Partner:</strong>
+                    <p>
+                        {% if lead.partner %}
+                            {{ lead.partner.name }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <strong>Assigned Team Member:</strong>
+                    <p>
+                        {% if lead.assigned_team_member %}
+                            <span class="badge bg-info">
+                                <i class="fas fa-user"></i> {{ lead.assigned_team_member.name }}
+                            </span>
+                        {% else %}
+                            <span class="badge bg-secondary">Unassigned</span>
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <strong>Stage:</strong>
+                    <p>
+                        {% if lead.stage %}
+                            <span class="badge bg-secondary">{{ lead.stage.name }}</span>
+                        {% else %}
+                            Not Set
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <strong>Deal Amount:</strong>
+                    <p class="fw-bold text-success">₹{{ lead.deal_amount|floatformat:2 }}</p>
+                </div>
+            </div>
+
+            <hr>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#updateLeadModal">
+                    <i class="fas fa-edit"></i> Update Lead
+                </button>
+                <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#assignTeamModal">
+                    <i class="fas fa-user-plus"></i> Assign Team Member
+                </button>
+            </div>
+        </div>
+
+        <!-- Follow-up Notes -->
+        <div class="card-custom">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h4><i class="fas fa-comments"></i> Follow-up Notes ({{ notes.count }})</h4>
+                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addNoteModal">
+                    <i class="fas fa-plus"></i> Add Note
+                </button>
+            </div>
+
+            {% for note in notes %}
+            <div class="card mb-3" style="background: #f8f9fa;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div>
+                            {% if note.team_member %}
+                                <strong>{{ note.team_member.name }}</strong>
+                                <span class="badge bg-info ms-2">{{ note.team_member.get_role_display }}</span>
+                            {% else %}
+                                <strong>Admin</strong>
+                            {% endif %}
+                        </div>
+                        <small class="text-muted">
+                            <i class="fas fa-clock"></i> {{ note.created_at|date:"d M, Y H:i" }}
+                        </small>
+                    </div>
+                    <p class="mb-0">{{ note.note }}</p>
+                </div>
+            </div>
+            {% empty %}
+            <div class="text-center text-muted py-4">
+                <i class="fas fa-comments fa-3x mb-3 d-block"></i>
+                <p>No follow-up notes yet</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Quick Actions Sidebar -->
+    <div class="col-md-4">
+        <div class="card-custom mb-4">
+            <h5 class="mb-3"><i class="fas fa-info-circle"></i> Lead Status</h5>
+            <p><strong>Created:</strong> {{ lead.created_at|date:"d M, Y" }}</p>
+            <p><strong>Last Updated:</strong> {{ lead.updated_at|date:"d M, Y H:i" }}</p>
+            
+            {% if lead.assigned_date %}
+                <p><strong>Assigned Date:</strong> {{ lead.assigned_date|date:"d M, Y" }}</p>
+            {% endif %}
+
+            {% if lead.commission_paid %}
+                <span class="badge bg-success">Commission Paid</span>
+            {% else %}
+                <span class="badge bg-warning">Commission Pending</span>
+            {% endif %}
+        </div>
+
+        {% if lead.lead_type == 'partner_referral' %}
+        <div class="card-custom">
+            <h5 class="mb-3"><i class="fas fa-money-bill-wave"></i> Commission Details</h5>
+            <p><strong>Commission %:</strong> {{ lead.commission_percent }}%</p>
+            <p><strong>Commission Amount:</strong> <span class="fw-bold text-success">₹{{ lead.commission_amount|floatformat:2 }}</span></p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Update Lead Modal -->
+<div class="modal fade" id="updateLeadModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-edit"></i> Update Lead</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'admin_update_lead' lead.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Stage</label>
+                        <select class="form-select" name="stage">
+                            <option value="">Select Stage</option>
+                            {% for stage in stages %}
+                                <option value="{{ stage.id }}" 
+                                        {% if lead.stage and lead.stage.id == stage.id %}selected{% endif %}>
+                                    {{ stage.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Deal Amount (₹)</label>
+                        <input type="number" step="0.01" class="form-control" 
+                               name="deal_amount" value="{{ lead.deal_amount }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Update
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Team Member Modal -->
+<div class="modal fade" id="assignTeamModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title"><i class="fas fa-user-plus"></i> Assign Team Member</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'admin_assign_team_member' lead.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Select Team Member</label>
+                        <select class="form-select" name="team_member">
+                            <option value="">-- Unassign --</option>
+                            {% for member in team_members %}
+                                <option value="{{ member.id }}" 
+                                        {% if lead.assigned_team_member and lead.assigned_team_member.id == member.id %}selected{% endif %}>
+                                    {{ member.name }} ({{ member.get_role_display }})
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check"></i> Assign
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add Note Modal -->
+<!-- Add Note Modal in admin_lead_detail.html -->
+<div class="modal fade" id="addNoteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title"><i class="fas fa-plus"></i> Add Follow-up Note</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{% url 'admin_add_lead_note' lead.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Note</label>
+                        <textarea class="form-control" name="note" rows="5" 
+                                  placeholder="Enter follow-up notes after student interaction..." required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-calendar"></i> Next Follow-up Date (Optional)
+                        </label>
+                        <input type="date" class="form-control" name="follow_up_date">
+                        <small class="text-muted">Set a reminder for next follow-up with the student</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Add Note
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
