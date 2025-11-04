@@ -112,16 +112,14 @@ def partner_add_lead(request):
         customer_phone = request.POST.get('customer_phone')
         stage_id = request.POST.get('stage')
         deal_amount = request.POST.get('deal_amount', 0)
-        notes = request.POST.get('notes', '')
+        notes_text = request.POST.get('notes', '')  # Rename kar diya
         
-        # Lead type select karna hai
-        lead_ownership = request.POST.get('lead_ownership')  # 'own' ya 'referral'
-        
+        lead_ownership = request.POST.get('lead_ownership')
         stage = LeadStage.objects.get(id=stage_id) if stage_id else None
         
         if lead_ownership == 'own':
-            # Partner apne liye lead bana raha hai
-            Lead.objects.create(
+            # Lead create karo WITHOUT notes
+            lead = Lead.objects.create(
                 lead_type='partner_own',
                 partner=partner,
                 customer_name=customer_name,
@@ -129,13 +127,21 @@ def partner_add_lead(request):
                 customer_phone=customer_phone,
                 stage=stage,
                 deal_amount=float(deal_amount) if deal_amount else 0,
-                notes=notes,
-                assigned_to_admin=False  # Partner khud manage karega
+                assigned_to_admin=False
             )
+            
+            # Agar notes text hai to LeadNote create karo
+            if notes_text:
+                LeadNote.objects.create(
+                    lead=lead,
+                    note=notes_text,
+                    created_by=request.user
+                )
+            
             messages.success(request, 'Own lead added successfully! You can manage this lead.')
         else:
-            # Partner referral lead bana raha hai - Admin ko assign
-            Lead.objects.create(
+            # Referral lead
+            lead = Lead.objects.create(
                 lead_type='partner_referral',
                 partner=partner,
                 customer_name=customer_name,
@@ -143,9 +149,17 @@ def partner_add_lead(request):
                 customer_phone=customer_phone,
                 stage=stage,
                 deal_amount=float(deal_amount) if deal_amount else 0,
-                notes=notes,
-                assigned_to_admin=True  # Admin manage karega
+                assigned_to_admin=True
             )
+            
+            # Notes add karo agar hai
+            if notes_text:
+                LeadNote.objects.create(
+                    lead=lead,
+                    note=notes_text,
+                    created_by=request.user
+                )
+            
             messages.success(request, 'Referral lead submitted to admin! You will receive commission when closed.')
         
         return redirect('partner_leads')
@@ -156,8 +170,6 @@ def partner_add_lead(request):
     }
     
     return render(request, 'referal_system/partner_add_lead.html', context)
-
-
 # Partner Leads List
 # Partner Leads List (UPDATED)
 # Partner Leads List
