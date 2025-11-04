@@ -224,12 +224,12 @@ def partner_request_payout(request):
         amount = float(request.POST.get('amount'))
         bank_details = request.POST.get('bank_details')
         
-        if amount > partner.wallet_balance:
-            messages.error(request, 'Insufficient balance!')
+        if amount <= 0:
+            messages.error(request, 'Please enter a valid amount!')
             return redirect('partner_wallet')
         
-        if amount < 100:
-            messages.error(request, 'Minimum payout amount is ₹100')
+        if amount > partner.wallet_balance:
+            messages.error(request, 'Insufficient balance!')
             return redirect('partner_wallet')
         
         Payout.objects.create(
