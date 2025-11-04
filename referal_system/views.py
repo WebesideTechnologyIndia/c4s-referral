@@ -170,6 +170,8 @@ def partner_add_lead(request):
     }
     
     return render(request, 'referal_system/partner_add_lead.html', context)
+
+
 # Partner Leads List
 # Partner Leads List (UPDATED)
 # Partner Leads List
