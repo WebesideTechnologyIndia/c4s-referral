@@ -58,6 +58,8 @@ urlpatterns = [
         views.admin_delete_stage,
         name="admin_delete_stage",
     ),
+        path('admin/stages/edit/<int:stage_id>/', views.admin_edit_stage, name='admin_edit_stage'),
+
     path("admin/payouts/", views.admin_payouts, name="admin_payouts"),
     path(
         "admin/payouts/<int:payout_id>/process/",

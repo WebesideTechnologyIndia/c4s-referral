@@ -643,7 +643,8 @@ def admin_stages(request):
         
         LeadStage.objects.create(
             name=name,
-            order=int(order)
+            order=int(order),
+            created_by=request.user  # Agar created_by field hai model mein
         )
         
         messages.success(request, 'Stage created successfully!')
@@ -656,7 +657,26 @@ def admin_stages(request):
     }
     
     return render(request, 'referal_system/admin_stages.html', context)
-# Admin Delete Stage
+
+
+@login_required
+def admin_edit_stage(request, stage_id):
+    if not request.user.is_staff:
+        return redirect('partner_login')
+    
+    stage = get_object_or_404(LeadStage, id=stage_id)
+    
+    if request.method == 'POST':
+        stage.name = request.POST.get('name')
+        stage.order = int(request.POST.get('order', 0))
+        stage.save()
+        
+        messages.success(request, 'Stage updated successfully!')
+        return redirect('admin_stages')
+    
+    return redirect('admin_stages')
+
+
 @login_required
 def admin_delete_stage(request, stage_id):
     if not request.user.is_staff:
@@ -664,9 +684,9 @@ def admin_delete_stage(request, stage_id):
     
     stage = get_object_or_404(LeadStage, id=stage_id)
     stage.delete()
+    
     messages.success(request, 'Stage deleted successfully!')
     return redirect('admin_stages')
-
 # Admin Payouts
 @login_required
 def admin_payouts(request):
