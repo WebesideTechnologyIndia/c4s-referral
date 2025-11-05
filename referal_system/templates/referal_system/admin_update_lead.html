@@ -1,0 +1,102 @@
+{% extends 'referal_system/admin_base.html' %}
+
+{% block title %}Update Lead{% endblock %}
+{% block page_title %}Update Lead{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card-custom">
+            <h4 class="mb-4">
+                <i class="fas fa-edit"></i> Update Lead - {{ lead.customer_name }}
+            </h4>
+
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="alert alert-info">
+                    <strong>Lead Type:</strong> 
+                    {% if lead.lead_type == 'admin' %}
+                        <span class="badge bg-primary">Admin Lead</span>
+                    {% elif lead.lead_type == 'partner_referral' %}
+                        <span class="badge bg-success">Partner Referral</span>
+                    {% else %}
+                        <span class="badge bg-warning">Partner Own</span>
+                    {% endif %}
+                    
+                    {% if lead.partner %}
+                        | <strong>Partner:</strong> {{ lead.partner.name }}
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Customer Name *</label>
+                    <input type="text" class="form-control" name="customer_name" value="{{ lead.customer_name }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Customer Email *</label>
+                    <input type="email" class="form-control" name="customer_email" value="{{ lead.customer_email }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Customer Phone *</label>
+                    <input type="text" class="form-control" name="customer_phone" value="{{ lead.customer_phone }}" required>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Lead Stage</label>
+                    <select class="form-select" name="stage">
+                        <option value="">Select Stage</option>
+                        {% for stage in stages %}
+                            <option value="{{ stage.id }}" {% if lead.stage.id == stage.id %}selected{% endif %}>
+                                {{ stage.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Deal Amount (₹)</label>
+                    <input type="number" step="0.01" class="form-control" name="deal_amount" value="{{ lead.deal_amount }}">
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Commission Percent (%)</label>
+                    <input type="number" step="0.01" class="form-control" name="commission_percent" value="{{ lead.commission_percent }}">
+                    <small class="text-muted">
+                        Current Commission Amount: <strong>₹{{ lead.commission_amount }}</strong>
+                    </small>
+                </div>
+
+                {% if lead.lead_type == 'partner_referral' and lead.partner %}
+                <div class="mb-3">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="commission_paid" id="commissionPaid" 
+                               {% if lead.commission_paid %}checked disabled{% endif %}>
+                        <label class="form-check-label" for="commissionPaid">
+                            Mark Commission as Paid
+                            {% if lead.commission_paid %}
+                                <span class="badge bg-success ms-2">Already Paid</span>
+                            {% endif %}
+                        </label>
+                    </div>
+                    <small class="text-muted">
+                        This will credit ₹{{ lead.commission_amount }} to {{ lead.partner.name }}'s wallet
+                    </small>
+                </div>
+                {% endif %}
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-save"></i> Update Lead
+                    </button>
+                    <a href="{% url 'admin_leads' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Leads
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

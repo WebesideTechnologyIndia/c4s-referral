@@ -99,7 +99,12 @@ urlpatterns = [
     path('team/leads/<int:lead_id>/add-note/', views.team_add_note, name='team_add_note'),
     path('team/notes/<int:note_id>/complete/', views.team_mark_followup_complete, name='team_mark_followup_complete'),
     path('team/followup-calendar/', views.team_followup_calendar, name='team_followup_calendar'),
-    
+    path('leads/bulk-upload/', views.admin_bulk_upload_leads, name='admin_bulk_upload_leads'),
+path('leads/download-sample/', views.download_sample_excel, name='download_sample_excel'),
+
+# Partner Bulk Upload
+path('partner/leads/bulk-upload/', views.partner_bulk_upload_leads, name='partner_bulk_upload_leads'),
+path('partner/leads/download-sample/', views.partner_download_sample_excel, name='partner_download_sample_excel'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

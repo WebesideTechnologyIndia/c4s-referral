@@ -1,0 +1,135 @@
+{% extends 'referal_system/admin_base.html' %}
+
+{% block title %}Bulk Upload Leads{% endblock %}
+{% block page_title %}Bulk Upload Leads{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card-custom">
+            <h4 class="mb-4"><i class="fas fa-file-excel"></i> Bulk Upload Leads via Excel</h4>
+
+            <!-- Sample File Download -->
+            <div class="alert alert-info mb-4">
+                <h5><i class="fas fa-download"></i> Download Sample Excel Format</h5>
+                <p class="mb-2">Download the sample file to see the correct format for bulk upload:</p>
+                <a href="{% url 'download_sample_excel' %}" class="btn btn-sm btn-success">
+                    <i class="fas fa-file-excel"></i> Download Sample Excel
+                </a>
+            </div>
+
+            <!-- Upload Form -->
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Lead Type *</label>
+                    <select class="form-select" name="lead_type" id="leadType" required onchange="toggleInfo()">
+                        <option value="admin">Admin Lead (My Own Leads - No Partner)</option>
+                        <option value="partner">Partner Lead (Assign to Partners)</option>
+                    </select>
+                </div>
+
+                <!-- Info for Admin Leads -->
+                <div class="alert alert-primary" id="adminInfo">
+                    <h6><i class="fas fa-user-tie"></i> Admin Lead (Your Own Leads):</h6>
+                    <ul class="mb-0 small">
+                        <li><strong>No partner assignment</strong> - These are your direct leads</li>
+                        <li>Commission will be <strong>0%</strong></li>
+                        <li>You can manage these leads yourself</li>
+                    </ul>
+                </div>
+
+                <!-- Info for Partner Leads -->
+                <div class="alert alert-success" id="partnerInfo" style="display:none;">
+                    <h6><i class="fas fa-handshake"></i> Partner Lead Assignment:</h6>
+                    <ul class="mb-0 small">
+                        <li>If <strong>partner_email</strong> column is provided → Lead assigned to that specific partner</li>
+                        <li>If <strong>partner_email</strong> is empty → <span class="badge bg-info">Automatic Round Robin</span> (least leads wale partner ko milega)</li>
+                        <li>Commission will be calculated based on deal amount</li>
+                    </ul>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Upload Excel File *</label>
+                    <input type="file" class="form-control" name="excel_file" accept=".xlsx, .xls" required>
+                    <small class="text-muted">Supported formats: .xlsx, .xls</small>
+                </div>
+
+                <!-- Instructions -->
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h6 class="fw-bold mb-3">📋 Excel Format Instructions:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-success">✅ Required Columns (Both Types):</h6>
+                                <ul class="small">
+                                    <li><strong>customer_name</strong> - Full name</li>
+                                    <li><strong>customer_email</strong> - Valid email</li>
+                                    <li><strong>customer_phone</strong> - Phone number</li>
+                                </ul>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-primary">📝 Optional Columns:</h6>
+                                <ul class="small">
+                                    <li><strong>partner_email</strong> - For Partner Leads only (leave empty for round robin)</li>
+                                    <li><strong>stage_name</strong> - Lead stage</li>
+                                    <li><strong>deal_amount</strong> - Deal amount (₹)</li>
+                                    <li><strong>commission_percent</strong> - Commission % (Partner Leads only)</li>
+                                    <li><strong>notes</strong> - Additional notes</li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <hr>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="alert alert-light mb-0">
+                                    <h6 class="text-primary">📌 Admin Leads:</h6>
+                                    <p class="small mb-0">
+                                        <strong>Ignore partner_email column</strong> - All leads will be assigned to you directly with no partner involvement.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="alert alert-light mb-0">
+                                    <h6 class="text-success">🔄 Partner Leads Round Robin:</h6>
+                                    <p class="small mb-0">
+                                        When partner_email is empty, system assigns to partner with <strong>least leads</strong> for fair distribution! 🎯
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-upload"></i> Upload Leads
+                    </button>
+                    <a href="{% url 'admin_leads' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left"></i> Back to Leads
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+function toggleInfo() {
+    const leadType = document.getElementById('leadType').value;
+    const adminInfo = document.getElementById('adminInfo');
+    const partnerInfo = document.getElementById('partnerInfo');
+    
+    if (leadType === 'admin') {
+        adminInfo.style.display = 'block';
+        partnerInfo.style.display = 'none';
+    } else {
+        adminInfo.style.display = 'none';
+        partnerInfo.style.display = 'block';
+    }
+}
+</script>
+{% endblock %}

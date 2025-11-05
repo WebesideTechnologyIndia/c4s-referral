@@ -14,15 +14,16 @@
                 
                 <div class="mb-3">
                     <label class="form-label fw-semibold">Lead Type *</label>
-                    <select class="form-select" name="lead_type" id="leadType" required onchange="togglePartnerField()">
-                        <option value="admin">Admin Lead</option>
-                        <option value="partner">Partner Lead</option>
+                    <select class="form-select" name="lead_type" id="leadType" required onchange="toggleFields()">
+                        <option value="admin">Admin Lead (My Own Lead)</option>
+                        <option value="partner">Partner Referral Lead</option>
                     </select>
+                    <small class="text-muted">Select "Admin Lead" for your own leads, "Partner Referral" for commission-based leads</small>
                 </div>
 
                 <div class="mb-3" id="partnerField" style="display: none;">
                     <label class="form-label fw-semibold">Select Partner *</label>
-                    <select class="form-select" name="partner">
+                    <select class="form-select" name="partner" id="partnerSelect">
                         <option value="">Choose Partner</option>
                         {% for partner in partners %}
                             <option value="{{ partner.id }}">{{ partner.name }} - {{ partner.email }}</option>
@@ -60,10 +61,17 @@
                     <input type="number" step="0.01" class="form-control" name="deal_amount" value="0">
                 </div>
 
-                <div class="mb-3">
-                    <label class="form-label fw-semibold">Commission Percent (%)</label>
-                    <input type="number" step="0.01" class="form-control" name="commission_percent" value="0">
-                    <small class="text-muted">Commission will be calculated automatically based on deal amount</small>
+                <!-- Commission fields - Only show for Partner Referral leads -->
+                <div id="commissionFields" style="display: none;">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i> Commission will be calculated and paid to the selected partner
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Commission Percent (%)</label>
+                        <input type="number" step="0.01" class="form-control" name="commission_percent" id="commissionInput" value="0">
+                        <small class="text-muted">Commission will be calculated automatically based on deal amount</small>
+                    </div>
                 </div>
 
                 <div class="d-grid gap-2">
@@ -80,15 +88,30 @@
 </div>
 
 <script>
-function togglePartnerField() {
+function toggleFields() {
     const leadType = document.getElementById('leadType').value;
     const partnerField = document.getElementById('partnerField');
+    const commissionFields = document.getElementById('commissionFields');
+    const partnerSelect = document.getElementById('partnerSelect');
+    const commissionInput = document.getElementById('commissionInput');
     
     if (leadType === 'partner') {
+        // Partner Referral Lead - Show partner and commission fields
         partnerField.style.display = 'block';
+        commissionFields.style.display = 'block';
+        partnerSelect.required = true;
     } else {
+        // Admin Lead - Hide partner and commission fields
         partnerField.style.display = 'none';
+        commissionFields.style.display = 'none';
+        partnerSelect.required = false;
+        commissionInput.value = '0'; // Reset commission to 0
     }
 }
+
+// Run on page load
+document.addEventListener('DOMContentLoaded', function() {
+    toggleFields();
+});
 </script>
 {% endblock %}

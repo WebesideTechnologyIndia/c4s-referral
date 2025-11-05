@@ -146,10 +146,10 @@
                                 </td>
                             </tr>
 
-                            <!-- Update Modal (Sirf Own Leads Ke Liye - Jo Assigned Nahi Hain) -->
+                            <!-- ✅ UPDATE MODAL - ALL FIELDS EDITABLE -->
                             {% if lead.lead_type == 'partner_own' and not lead.assigned_to_admin %}
                             <div class="modal fade" id="updateModal{{ lead.id }}" tabindex="-1">
-                                <div class="modal-dialog">
+                                <div class="modal-dialog modal-lg">
                                     <div class="modal-content">
                                         <div class="modal-header bg-primary text-white">
                                             <h5 class="modal-title"><i class="fas fa-edit"></i> Update Own Lead</h5>
@@ -158,36 +158,65 @@
                                         <form method="POST" action="{% url 'partner_update_lead' lead.id %}">
                                             {% csrf_token %}
                                             <div class="modal-body">
-                                                <p><strong>Customer:</strong> {{ lead.customer_name }}</p>
-                                                <p><strong>Email:</strong> {{ lead.customer_email }}</p>
+                                                <!-- Customer Details Section -->
+                                                <h6 class="mb-3"><i class="fas fa-address-card"></i> Customer Details</h6>
                                                 
-                                                <div class="mb-3">
-                                                    <label class="form-label">Update Stage</label>
-                                                    <select class="form-select" name="stage">
-                                                        <option value="">Select Stage</option>
-                                                        {% for stage in stages %}
-                                                            <option value="{{ stage.id }}" 
-                                                                    {% if lead.stage and lead.stage.id == stage.id %}selected{% endif %}>
-                                                                {{ stage.name }}
-                                                            </option>
-                                                        {% endfor %}
-                                                    </select>
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-semibold">Customer Name *</label>
+                                                        <input type="text" class="form-control" name="customer_name" 
+                                                               value="{{ lead.customer_name }}" required>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-semibold">Customer Phone *</label>
+                                                        <input type="text" class="form-control" name="customer_phone" 
+                                                               value="{{ lead.customer_phone }}" required>
+                                                    </div>
                                                 </div>
 
                                                 <div class="mb-3">
-                                                    <label class="form-label">Deal Amount (₹)</label>
-                                                    <input type="number" class="form-control" name="deal_amount" 
-                                                           step="0.01" value="{{ lead.deal_amount }}">
+                                                    <label class="form-label fw-semibold">Customer Email *</label>
+                                                    <input type="email" class="form-control" name="customer_email" 
+                                                           value="{{ lead.customer_email }}" required>
+                                                </div>
+
+                                                <hr class="my-3">
+
+                                                <!-- Lead Details Section -->
+                                                <h6 class="mb-3"><i class="fas fa-briefcase"></i> Lead Details</h6>
+
+                                                <div class="row">
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-semibold">Lead Stage</label>
+                                                        <select class="form-select" name="stage">
+                                                            <option value="">Select Stage</option>
+                                                            {% for stage in stages %}
+                                                                <option value="{{ stage.id }}" 
+                                                                        {% if lead.stage and lead.stage.id == stage.id %}selected{% endif %}>
+                                                                    {{ stage.name }}
+                                                                </option>
+                                                            {% endfor %}
+                                                        </select>
+                                                    </div>
+
+                                                    <div class="col-md-6 mb-3">
+                                                        <label class="form-label fw-semibold">Deal Amount (₹)</label>
+                                                        <input type="number" class="form-control" name="deal_amount" 
+                                                               step="0.01" min="0" value="{{ lead.deal_amount }}">
+                                                    </div>
                                                 </div>
 
                                                 <div class="mb-3">
-                                                    <label class="form-label">Notes</label>
-                                                    <textarea class="form-control" name="notes" rows="3">{{ lead.notes }}</textarea>
+                                                    <label class="form-label fw-semibold">Notes (Optional)</label>
+                                                    <textarea class="form-control" name="notes" rows="3" 
+                                                              placeholder="Add any additional notes about the lead..."></textarea>
+                                                    <small class="text-muted">Add new notes here. Previous notes will be preserved.</small>
                                                 </div>
 
                                                 <div class="alert alert-success small">
                                                     <i class="fas fa-check-circle"></i> 
-                                                    This is your own lead. You have full control to update it.
+                                                    This is your own lead. You have full control to update all fields.
                                                 </div>
                                             </div>
                                             <div class="modal-footer">
@@ -246,7 +275,7 @@
                                 </div>
                             </div>
 
-                            <!-- ✅ DELETE MODAL (NEW) -->
+                            <!-- ✅ DELETE MODAL -->
                             <div class="modal fade" id="deleteModal{{ lead.id }}" tabindex="-1">
                                 <div class="modal-dialog">
                                     <div class="modal-content">

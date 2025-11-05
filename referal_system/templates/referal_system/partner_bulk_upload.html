@@ -1,0 +1,184 @@
+{% extends 'referal_system/partner_base.html' %}
+
+{% block title %}Bulk Upload Leads{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-card {
+        background: white;
+        border-radius: 15px;
+        padding: 35px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    .lead-type-card {
+        border: 2px solid #e0e0e0;
+        border-radius: 10px;
+        padding: 20px;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .lead-type-card:hover {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+    .lead-type-card input[type="radio"]:checked + label {
+        border-color: #667eea;
+        background: #f8f9ff;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="form-card">
+                <div class="text-center mb-4">
+                    <h2><i class="fas fa-file-excel text-primary"></i> Bulk Upload Leads</h2>
+                    <p class="text-muted">Upload multiple leads via Excel file</p>
+                </div>
+
+                <!-- Sample File Download -->
+                <div class="alert alert-info mb-4">
+                    <h5><i class="fas fa-download"></i> Download Sample Excel Format</h5>
+                    <p class="mb-2">Download the sample file to see the correct format:</p>
+                    <a href="{% url 'partner_download_sample_excel' %}" class="btn btn-sm btn-success">
+                        <i class="fas fa-file-excel"></i> Download Sample Excel
+                    </a>
+                </div>
+
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Lead Ownership Type -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="fas fa-briefcase"></i> Lead Type *
+                        </label>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <input type="radio" name="lead_ownership" value="own" 
+                                       id="ownLeads" class="d-none" checked required>
+                                <label for="ownLeads" class="lead-type-card w-100">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-user-tie fa-2x text-primary me-3"></i>
+                                        <div>
+                                            <h5 class="mb-2">Own Leads</h5>
+                                            <p class="text-muted small mb-0">
+                                                Upload leads for yourself. You will manage these leads completely.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                            <div class="col-md-6">
+                                <input type="radio" name="lead_ownership" value="referral" 
+                                       id="referralLeads" class="d-none" required>
+                                <label for="referralLeads" class="lead-type-card w-100">
+                                    <div class="d-flex align-items-start">
+                                        <i class="fas fa-handshake fa-2x text-success me-3"></i>
+                                        <div>
+                                            <h5 class="mb-2">Referral Leads</h5>
+                                            <p class="text-muted small mb-0">
+                                                Assign to admin for management. You get commission when closed.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-semibold">Upload Excel File *</label>
+                        <input type="file" class="form-control" name="excel_file" accept=".xlsx, .xls" required>
+                        <small class="text-muted">Supported formats: .xlsx, .xls</small>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="card bg-light mb-4">
+                        <div class="card-body">
+                            <h6 class="fw-bold mb-3">📋 Excel Format Instructions:</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h6 class="text-success">✅ Required Columns:</h6>
+                                    <ul class="small">
+                                        <li><strong>customer_name</strong> - Full name</li>
+                                        <li><strong>customer_email</strong> - Valid email</li>
+                                        <li><strong>customer_phone</strong> - Phone number</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-primary">📝 Optional Columns:</h6>
+                                    <ul class="small">
+                                        <li><strong>stage_name</strong> - Lead stage</li>
+                                        <li><strong>deal_amount</strong> - Deal amount (₹)</li>
+                                        <li><strong>commission_percent</strong> - Commission % (Referral only)</li>
+                                        <li><strong>notes</strong> - Additional notes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <hr>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="alert alert-light mb-0">
+                                        <h6 class="text-primary">📌 Own Leads:</h6>
+                                        <p class="small mb-0">
+                                            You can update stage, deal amount anytime. Full control over your leads.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="alert alert-light mb-0">
+                                        <h6 class="text-success">💰 Referral Leads:</h6>
+                                        <p class="small mb-0">
+                                            Admin manages these leads. You receive commission when they close successfully!
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-upload"></i> Upload Leads
+                        </button>
+                        <a href="{% url 'partner_leads' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Leads
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Radio button styling
+document.querySelectorAll('.lead-type-card').forEach(card => {
+    card.addEventListener('click', function() {
+        document.querySelectorAll('.lead-type-card').forEach(c => {
+            c.style.borderColor = '#e0e0e0';
+            c.style.background = 'white';
+        });
+        this.style.borderColor = '#667eea';
+        this.style.background = '#f8f9ff';
+    });
+});
+
+// Set initial selected state
+document.addEventListener('DOMContentLoaded', function() {
+    const checkedRadio = document.querySelector('input[name="lead_ownership"]:checked');
+    if (checkedRadio) {
+        const label = document.querySelector(`label[for="${checkedRadio.id}"]`);
+        if (label) {
+            label.style.borderColor = '#667eea';
+            label.style.background = '#f8f9ff';
+        }
+    }
+});
+</script>
+{% endblock %}

@@ -136,7 +136,7 @@ class Lead(models.Model):
     commission_paid = models.BooleanField(default=False)
     
     additional_notes = models.TextField(blank=True, null=True)
-
+    next_follow_up = models.DateField(null=True, blank=True)
     
     # ✅ YE NAYA FIELD ADD KARO
     assigned_to_admin = models.BooleanField(default=False)
@@ -156,6 +156,8 @@ class Lead(models.Model):
     
     class Meta:
         ordering = ['-created_at']
+
+
 
 class LeadNote(models.Model):
     lead = models.ForeignKey(Lead, on_delete=models.CASCADE, related_name='notes')
